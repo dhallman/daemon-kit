@@ -1,3 +1,5 @@
+require 'etc'
+
 module DaemonKit
 
   # Simplify simple config file loading for daemons. Assumes the
@@ -40,7 +42,38 @@ module DaemonKit
     # Expects a hash, looks for DAEMON_ENV key
     def initialize( config_data ) #:nodoc:
       if config_data.has_key?( DAEMON_ENV )
-        self.data = config_data[ DAEMON_ENV ]
+        env_config = config_data[ DAEMON_ENV ]
+
+        # Check to see if there are any user specific overrides of
+        # values for this environments configuration.  This allows
+        # you to "attach" to a production or staging environment
+        # from their local box.  For example, if I am running on my
+        # local box, I may need to use SSH tunneling to access
+        # production databases or message queues.  So, you can
+        # allow users to override production values with user
+        # specific values to build an SSH tunnel to the production
+        # resources (databases, queues).  IOW, this allows the
+        # daemon to run locally as if it were one of the nodes
+        # in the production array:
+        #
+        # i.e.
+        #
+        #   production:
+        #     host: i.xyzcorp.aws.com  # user internal ip
+        #
+        #   # User values will override same production values
+        #   dean@production: 
+        #     host: localhost    # use ssh tunnel 
+        #     ssh_host:  xyzcorp.com
+        #     ssh_username:  dean
+        #
+        username = Etc.getlogin
+        user_overrides = "#{username}@#{DAEMON_ENV}"
+        if config_data.has_key?(user_overrides)
+          env_config.merge!(config_data[user_overrides])
+        end
+
+        self.data = env_config
       else
         self.data = config_data
       end
