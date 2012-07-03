@@ -37,6 +37,11 @@ module DaemonKit
         ::EM.stop_event_loop if ::EM.reactor_running?
         Thread.main[:_dk_reactor].join
       end
+
+      def reactor_running?
+        ::EM.reactor_running?
+      end
+
     end
 
   end
