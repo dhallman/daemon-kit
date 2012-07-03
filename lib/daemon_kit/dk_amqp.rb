@@ -28,8 +28,19 @@ module DaemonKit
 
     def run(&block)
       # Ensure graceful shutdown of the connection to the broker
-      DaemonKit.trap('INT') { ::AMQP.stop { ::EM.stop } }
-      DaemonKit.trap('TERM') { ::AMQP.stop { ::EM.stop } }
+      DaemonKit.trap('INT') {
+        DaemonKit.logger.warn "======================================================================================================================="
+        DaemonKit.logger.warn "INTERRUPT SIGNAL RECEIVED!  Please be patient..   Server will gracefully shut down after in-progress work is completed!"
+        DaemonKit.logger.warn "======================================================================================================================="
+        ::AMQP.stop { ::EM.stop }
+      }
+
+      DaemonKit.trap('TERM') {
+        DaemonKit.logger.warn "======================================================================================================================="
+        DaemonKit.logger.warn "TERMINATE SIGNAL RECEIVED!  Please be patient..   Server will gracefully shut down after in-progress work is completed!"
+        DaemonKit.logger.warn "======================================================================================================================="
+        ::AMQP.stop { ::EM.stop }
+      }
 
       # Start our event loop and AMQP client
       DaemonKit.logger.debug("AMQP.start(#{@config.inspect})")
