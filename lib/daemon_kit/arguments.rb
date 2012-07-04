@@ -16,7 +16,8 @@ module DaemonKit
     @commands = [
                  'start',
                  'stop',
-                 'run'
+                 'run',
+                 'kill'
                 ]
 
     class << self
@@ -120,7 +121,8 @@ module DaemonKit
         opts.separator "Command is one of the following:"
         opts.separator "    run   - Run the daemon without forking (default)"
         opts.separator "    start - Run the daemon"
-        opts.separator "    stop  - Stop the running daemon"
+        opts.separator "    stop  - Stop the running daemon (gracefully)"
+        opts.separator "    kill  - Kill the running daemon (terminate immediately)"
 
         opts.separator ""
 

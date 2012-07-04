@@ -24,6 +24,8 @@ module DaemonKit
           start( file )
         when :stop
           stop
+        when :kill
+          kill
         end
       end
 
@@ -85,6 +87,23 @@ module DaemonKit
         else
           @pid_file.cleanup
         end
+      end
+
+      def kill
+        @pid_file = PidFile.new( DaemonKit.configuration.pid_file( DaemonKit.configuration.instance ) )
+
+        unless @pid_file.running?
+          @pid_file.cleanup
+          puts "Nothing to kill"
+          exit
+        end
+
+        target_pid = @pid_file.pid
+
+        puts "Sending KILL to #{target_pid}"
+        Process.kill( 'KILL', target_pid )
+
+        @pid_file.cleanup
       end
 
       # Call this from inside a daemonized process to complete the
